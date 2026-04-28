@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>炸飞机 · BOOM!</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== 首页 ===== -->
+  <div id="screen-home" class="screen active">
+    <div class="home-bg-anim"></div>
+    <div class="home-container">
+      <div class="logo-block">
+        <div class="logo-plane">✈</div>
+        <h1 class="game-title">炸飞机</h1>
+        <p class="game-subtitle">BOOM!</p>
+      </div>
+
+      <div class="menu-buttons">
+        <button class="btn btn-primary" onclick="startSinglePlayer()">
+          <span class="btn-icon">🎯</span>
+          <span class="btn-text">
+            <span class="btn-main">单人模式</span>
+            <span class="btn-sub">15次机会，找到飞机</span>
+          </span>
+        </button>
+        <button class="btn btn-secondary" onclick="startAI()">
+          <span class="btn-icon">🤖</span>
+          <span class="btn-text">
+            <span class="btn-main">人机对战</span>
+            <span class="btn-sub">智能AI，各守一架飞机</span>
+          </span>
+        </button>
+        <button class="btn btn-tertiary" onclick="startTwoPlayer()">
+          <span class="btn-icon">⚔️</span>
+          <span class="btn-text">
+            <span class="btn-main">双人对战</span>
+            <span class="btn-sub">摇骰子先手，轮流轰炸</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="rules-card">
+        <div class="rules-title">✈ 玩法说明</div>
+        <div class="rules-list">
+          <div class="rule-item"><span class="rule-icon">🛩</span>棋盘中隐藏一架完整飞机</div>
+          <div class="rule-item"><span class="rule-icon">💣</span>点击格子，命中机身得"炸到了"</div>
+          <div class="rule-item"><span class="rule-icon">💥</span>命中机头，直接获胜！</div>
+          <div class="rule-item"><span class="rule-icon">🏆</span>炸出整架飞机，也算胜利</div>
+          <div class="rule-item"><span class="rule-icon">⚠️</span>单人模式共有 15 次机会</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 单人模式页面 ===== -->
+  <div id="screen-single" class="screen">
+    <div class="game-header">
+      <button class="btn-nav" onclick="goHome()">← 返回</button>
+      <h2 class="header-title">单人模式</h2>
+      <button class="btn-nav" onclick="restartSingle()">重开 ↺</button>
+    </div>
+
+    <div class="single-layout">
+
+      <!-- 左侧面板：次数 + 消息 -->
+      <div class="side-panel">
+        <div class="info-card attempts-card">
+          <div class="info-label">剩余机会</div>
+          <div class="info-value" id="attempts-left">15</div>
+          <div class="attempts-bar">
+            <div class="attempts-fill" id="attempts-fill"></div>
+          </div>
+        </div>
+        <div class="message-card" id="single-message">
+          <span class="msg-icon">🎯</span>
+          <span class="msg-text">点击格子开始搜索飞机</span>
+        </div>
+      </div>
+
+      <!-- 棋盘区域 -->
+      <div class="board-col">
+        <div class="board-grid" id="board-single"></div>
+      </div>
+
+      <!-- 飞机图例（桌面端在右侧，移动端在棋盘下方） -->
+      <div class="plane-legend legend-panel">
+        <div class="legend-head">飞机参考 · <span id="lg-name-single" class="lg-plane-name">朝向随机</span></div>
+        <div class="legend-body">
+          <div class="lg-grid" id="lg-grid-single"></div>
+          <div class="lg-keys">
+            <div class="lg-k"><span class="lgk h"></span>机头（命中即胜）</div>
+            <div class="lg-k"><span class="lgk b"></span>机身（炸完即胜）</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 人机对战页面 ===== -->
+  <div id="screen-ai" class="screen">
+    <div class="game-header">
+      <button class="btn-nav" onclick="goHome()">← 返回</button>
+      <h2 class="header-title">人机对战</h2>
+      <button class="btn-nav" onclick="restartAI()">重开 ↺</button>
+    </div>
+
+    <div class="ai-layout">
+      <div class="turn-indicator" id="ai-turn-ind">
+        <span class="turn-icon" id="ai-turn-icon">🎯</span>
+        <span id="ai-turn-text">你的回合 — 攻击 AI 防区</span>
+      </div>
+
+      <div class="ai-boards">
+        <div class="player-board-area active-target" id="ai-area-enemy">
+          <div class="board-area-header">
+            <span class="board-area-label">🤖 AI 防区</span>
+            <span class="board-area-hint" id="ai-hint-enemy">← 点击攻击</span>
+          </div>
+          <div class="board-grid" id="board-ai-enemy"></div>
+          <div class="ai-legend-inline">
+            <div class="lg-grid" id="lg-grid-ai"></div>
+            <div class="tls-info">
+              <div class="tls-title">飞机参考 · <span id="lg-name-ai" class="lg-plane-name">朝向随机</span></div>
+              <div class="tls-keys">
+                <span class="lgk h"></span><span>机头</span>
+                <span class="lgk b"></span><span>机身</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="player-board-area" id="ai-area-player">
+          <div class="board-area-header">
+            <span class="board-area-label">🧑 你的防区</span>
+            <span class="board-area-hint" id="ai-hint-player"></span>
+          </div>
+          <div class="board-grid" id="board-ai-player"></div>
+        </div>
+      </div>
+
+      <div class="ai-message-bar" id="ai-message">
+        <span class="msg-icon">🎯</span>
+        <span class="msg-text">点击 AI 防区开始轰炸</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 双人模式页面 ===== -->
+  <div id="screen-two" class="screen">
+    <div class="game-header">
+      <button class="btn-nav" onclick="goHome()">← 返回</button>
+      <h2 class="header-title">双人对战</h2>
+      <button class="btn-nav" onclick="restartTwo()">重开 ↺</button>
+    </div>
+
+    <!-- 骰子区域 -->
+    <div id="dice-section" class="dice-section">
+      <div class="dice-intro">
+        <div class="dice-title">摇骰子决定先手</div>
+        <div class="dice-subtitle">点数大者先出击</div>
+      </div>
+      <div class="dice-area">
+        <div class="player-dice-block">
+          <div class="player-dice-name">玩家 1</div>
+          <div class="dice-face" id="dice-1">?</div>
+          <div class="dice-value-label" id="dice-label-1"></div>
+        </div>
+        <div class="vs-divider">VS</div>
+        <div class="player-dice-block">
+          <div class="player-dice-name">玩家 2</div>
+          <div class="dice-face" id="dice-2">?</div>
+          <div class="dice-value-label" id="dice-label-2"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-dice" id="roll-btn" onclick="rollDice()">
+        🎲 掷骰子
+      </button>
+      <div class="dice-result-msg" id="dice-result-msg"></div>
+    </div>
+
+    <!-- 桌面双人：两块棋盘 -->
+    <div id="battle-section" class="battle-section" style="display:none">
+      <div class="turn-indicator" id="turn-indicator">
+        <span class="turn-icon">🎯</span>
+        <span id="turn-text">玩家 1 的回合</span>
+      </div>
+
+      <!-- 飞机图例条 -->
+      <div class="two-legend-strip">
+        <div class="lg-grid" id="lg-grid-two"></div>
+        <div class="tls-info">
+          <div class="tls-title">飞机参考 · <span id="lg-name-two" class="lg-plane-name">朝向随机</span></div>
+          <div class="tls-keys">
+            <span class="lgk h"></span><span>机头·命中即胜</span>
+            <span class="lgk b"></span><span>机身·炸光即胜</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-boards">
+        <div class="player-board-area" id="area-p1">
+          <div class="board-area-header">
+            <span class="board-area-label">玩家 1 的防区</span>
+            <span class="board-area-hint" id="hint-p1"></span>
+          </div>
+          <div class="board-grid" id="board-p1"></div>
+        </div>
+
+        <div class="player-board-area" id="area-p2">
+          <div class="board-area-header">
+            <span class="board-area-label">玩家 2 的防区</span>
+            <span class="board-area-hint" id="hint-p2"></span>
+          </div>
+          <div class="board-grid" id="board-p2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 手机双人：共用一块棋盘 -->
+    <div id="battle-mobile" class="battle-mobile" style="display:none">
+      <div class="turn-indicator" id="turn-ind-mobile">
+        <span class="turn-icon">🎯</span>
+        <span id="turn-text-mobile">玩家 1 出击</span>
+      </div>
+
+      <div class="mobile-score">
+        <div class="mscore-item" id="mscore-p1">
+          <div class="mscore-name">玩家 1</div>
+          <div class="mscore-hits">命中 <span id="mhits-p1">0</span> 格</div>
+        </div>
+        <div class="mscore-vs">VS</div>
+        <div class="mscore-item" id="mscore-p2">
+          <div class="mscore-name">玩家 2</div>
+          <div class="mscore-hits">命中 <span id="mhits-p2">0</span> 格</div>
+        </div>
+      </div>
+
+      <div class="two-legend-strip">
+        <div class="lg-grid" id="lg-grid-mobile"></div>
+        <div class="tls-info">
+          <div class="tls-title">飞机参考 · <span id="lg-name-mobile" class="lg-plane-name">朝向随机</span></div>
+          <div class="tls-keys">
+            <span class="lgk h"></span><span>机头·命中即胜</span>
+            <span class="lgk b"></span><span>机身·炸光即胜</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-col">
+        <div class="board-grid" id="board-mobile"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== 结果弹窗 ===== -->
+  <div id="overlay-result" class="overlay result-overlay" style="display:none">
+    <div class="overlay-card result-card">
+      <div class="result-icon" id="result-icon">🏆</div>
+      <h2 class="overlay-title" id="result-title">恭喜获胜！</h2>
+      <p class="overlay-msg" id="result-msg"></p>
+      <!-- 战局总结 -->
+      <div class="result-stats" id="result-stats"></div>
+      <div class="result-btns">
+        <button class="btn btn-primary" onclick="playAgain()">再来一局</button>
+        <button class="btn btn-outline" onclick="goHome()">返回首页</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 音效开关（固定悬浮） -->
+  <button id="sound-toggle" class="sound-btn" onclick="toggleSound()" title="切换音效">🔊</button>
+
+  <script src="game.js"></script>
+</body>
+</html>
